@@ -22,7 +22,7 @@ public class LoginController {
 
     @GetMapping("/")
     @CrossOrigin(origins = "http://localhost:4200")
-    public ResponseEntity<?> getTraderByEmail(@RequestParam String email, @RequestParam String password) {
+    public ResponseEntity<?> getTraderByEmail(@Request String email, @RequestParam String password) {
         TraderDTO traderDTO = loginService.getTraderByEmail(email);
         if (traderDTO.equals(null)) {
             return new ResponseEntity<>("", HttpStatus.OK);
