@@ -10,9 +10,9 @@ name: Project builder
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "feature/email-verifications" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "feature/email-verifications" ]
 
 permissions:
   contents: write
