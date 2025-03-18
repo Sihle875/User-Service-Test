@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.tradingsystem.UserService1.UserService1ApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.132 s -- in com.tradingsystem.UserService1.UserService1ApplicationTests

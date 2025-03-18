@@ -7,7 +7,6 @@ import java.util.Optional;
 
 public interface TraderRepository extends JpaRepository<Trader,Long> {
 
-
     Optional<Trader> findByEmail(String email);
 }
 
