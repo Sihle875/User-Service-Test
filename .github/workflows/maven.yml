@@ -24,28 +24,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: maven
+      # Checkout the repository
+      - uses: actions/checkout@v4
 
-    - name: Set up PostgreSQL
-      uses: harmon758/postgresql-action@v1.0.0
-      with:
-        postgresql version: '17' # Specify your PostgreSQL version
-        postgresql db: 'userService_db' # Replace with your database name
-        postgresql user: 'postgres' # Replace with your username
-        postgresql password: 'TradeTeam@785' # Replace with your password
+      # Set up JDK 17
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
 
-    - name: Build with Maven
-      env:
-        DB_URL: jdbc:postgresql://localhost:5432/userService_db # Replace with your database URL
-        DB_USER: postgres # Replace with your database username
-        DB_PASSWORD: TradeTeam@785
-      run: mvn clean test install
+      # Set up PostgreSQL
+      - name: Set up PostgreSQL
+        uses: harmon758/postgresql-action@v1.0.0
+        with:
+          postgresql version: '17' # Use a compatible PostgreSQL version
+          postgresql db: 'userService_db' # Replace with your database name
+          postgresql user: 'postgres' # Replace with your username
+          postgresql password: 'TradeTeam@785' # Replace with your password
+
+      # Add a wait step to ensure PostgreSQL is ready
+      - name: Wait for PostgreSQL
+        run: sleep 15
+
+      # Build and test with Maven
+      - name: Build and Test with Maven
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/userService_db # Correct database URL
+          SPRING_DATASOURCE_USERNAME: postgres # Database username
+          SPRING_DATASOURCE_PASSWORD: TradeTeam@785 # Database password
+        run: mvn clean test install
+
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     #- name: Update dependency graph
