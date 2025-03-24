@@ -10,9 +10,9 @@ name: Project builder
 
 on:
   push:
-    branches: [ "feature/signup" ]
+    branches: [ "feature/login" ]
   pull_request:
-    branches: [ "feature/signup" ]
+    branches: [ "feature/login" ]
 
 permissions:
   contents: write
