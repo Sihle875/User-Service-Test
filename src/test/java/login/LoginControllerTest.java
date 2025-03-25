@@ -42,7 +42,7 @@ class LoginControllerTest {
 
         // Mock data
         TraderDTO traderDTO = new TraderDTO();
-        traderDTO.setEmail("test@example.com");
+        traderDTO.setEmail("test@examples.com");
         traderDTO.setPassword("hashedPassword");
 
         // Mock service behavior
