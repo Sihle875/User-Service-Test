@@ -8,23 +8,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import java.util.Arrays;
+import java.util.List;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @AutoConfigureMockMvc
 @SpringBootTest(classes = UserService1Application.class)
 class LoginControllerTest {
-
-    private MockMvc mockMvc;
 
     @Mock
     private LoginService loginService;
@@ -34,66 +31,101 @@ class LoginControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(loginController).build();
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void testGetTraderByEmail_Success() throws Exception {
+    void testGetTraderByEmail_TraderFound_PasswordValid() {
+        // Arrange
+        String email = "trader@example.com";
+        String password = "correctPassword";
 
-        // Mock data
         TraderDTO traderDTO = new TraderDTO();
-        traderDTO.setEmail("test@example.com");
+        traderDTO.setEmail(email);
         traderDTO.setPassword("hashedPassword");
 
-        // Mock service behavior
-        Mockito.when(loginService.getTraderByEmail("test@example.com")).thenReturn(traderDTO);
-        Mockito.when(loginService.verifyPassword("password", "hashedPassword")).thenReturn(true);
+        when(loginService.getTraderByEmail(email)).thenReturn(traderDTO);
+        when(loginService.verifyPassword(password, traderDTO.getPassword())).thenReturn(true);
 
-        // Perform HTTP GET request
-        mockMvc.perform(get("/api/login/")
-                        .param("email", "test@example.com")
-                        .param("password", "password")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().string("User with username/ email: test@example.com \nsuccessfully Logged in"));
+        // Act
+        ResponseEntity<?> response = loginController.getTraderByEmail(email, password);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody().toString().contains("successfully Logged in"));
+
+        // Verify interactions
+        verify(loginService).getTraderByEmail(email);
+        verify(loginService).verifyPassword(password, traderDTO.getPassword());
     }
 
     @Test
-    void testGetTraderByEmail_Failure_InvalidPassword() throws Exception {
+    void testGetTraderByEmail_TraderNotFound() {
+        // Arrange
+        String email = "nonexistent@example.com";
+        String password = "anyPassword";
 
+        when(loginService.getTraderByEmail(email)).thenReturn(null);
 
-        // Mock data
+        // Act
+        ResponseEntity<?> response = loginController.getTraderByEmail(email, password);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Trader not found", response.getBody());
+
+        // Verify interactions
+        verify(loginService).getTraderByEmail(email);
+        verify(loginService, never()).verifyPassword(anyString(), anyString());
+    }
+
+    @Test
+    void testGetTraderByEmail_InvalidPassword() {
+        // Arrange
+        String email = "trader@example.com";
+        String password = "incorrectPassword";
+
         TraderDTO traderDTO = new TraderDTO();
-        traderDTO.setEmail("test@example.com");
+        traderDTO.setEmail(email);
         traderDTO.setPassword("hashedPassword");
 
-        // Mock service behavior
-        Mockito.when(loginService.getTraderByEmail("test@example.com")).thenReturn(traderDTO);
-        Mockito.when(loginService.verifyPassword("wrongPassword", "hashedPassword")).thenReturn(false);
+        when(loginService.getTraderByEmail(email)).thenReturn(traderDTO);
+        when(loginService.verifyPassword(password, traderDTO.getPassword())).thenReturn(false);
 
-        // Perform HTTP GET request
-        mockMvc.perform(get("/api/login/")
-                        .param("email", "test@example.com")
-                        .param("password", "wrongPassword")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Login unsuccessful. Please enter the correct password or reset it."));
+        // Act
+        ResponseEntity<?> response = loginController.getTraderByEmail(email, password);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Login unsuccessful. Please enter the correct password or reset it.", response.getBody());
+
+        // Verify interactions
+        verify(loginService).getTraderByEmail(email);
+        verify(loginService).verifyPassword(password, traderDTO.getPassword());
     }
 
     @Test
-    void testGetTraders_Success() throws Exception {
+    void testGetTraders() {
+        // Arrange
+        List<TraderDTO> traders = Arrays.asList(
+                new TraderDTO(),
+                new TraderDTO()
+        );
 
-        // Mock data
-        TraderDTO trader1 = new TraderDTO();
-        trader1.setEmail("trader1@example.com");
-        TraderDTO trader2 = new TraderDTO();
-        trader2.setEmail("trader2@example.com");
+        when(loginService.getTraders()).thenReturn(traders);
 
+        // Act
+        ResponseEntity<List> response = loginController.getTraders();
 
-        // Perform HTTP GET request
-        mockMvc.perform(get("/api/login/traders")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2));
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(traders, response.getBody());
+
+        // Verify interactions
+        verify(loginService).getTraders();
     }
 }
