@@ -12,7 +12,7 @@ on:
   push:
     branches: [ "feature/login" ]
   pull_request:
-    branches: [ "featured/login" ]
+    branches: [ "feature/login" ]
 
 permissions:
   contents: write
